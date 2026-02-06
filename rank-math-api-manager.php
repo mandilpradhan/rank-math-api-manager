@@ -21,7 +21,7 @@
  * GNU General Public License for more details.
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
 	exit;
 }
 
@@ -36,8 +36,9 @@ define('RANK_MATH_API_PLUGIN_URL', plugin_dir_url(__FILE__));
  *
  * @since 1.0.7
  */
-class Rank_Math_API_Manager_Extended {
-	
+class Rank_Math_API_Manager_Extended
+{
+
 	/**
 	 * Plugin instance
 	 *
@@ -59,7 +60,7 @@ class Rank_Math_API_Manager_Extended {
 	 */
 	private $github_repo = array(
 		'owner' => 'devora-as',
-		'repo'  => 'rank-math-api-manager',
+		'repo' => 'rank-math-api-manager',
 		'api_url' => 'https://api.github.com/repos/devora-as/rank-math-api-manager/releases/latest'
 	);
 
@@ -75,7 +76,8 @@ class Rank_Math_API_Manager_Extended {
 	 *
 	 * @return Rank_Math_API_Manager_Extended
 	 */
-	public static function get_instance() {
+	public static function get_instance()
+	{
 		if (null === self::$instance) {
 			self::$instance = new self();
 		}
@@ -85,7 +87,8 @@ class Rank_Math_API_Manager_Extended {
 	/**
 	 * Constructor
 	 */
-	private function __construct() {
+	private function __construct()
+	{
 		$this->init_plugin_data();
 		$this->init_hooks();
 	}
@@ -95,13 +98,14 @@ class Rank_Math_API_Manager_Extended {
 	 *
 	 * @since 1.0.7
 	 */
-	private function init_plugin_data() {
-		if ( ! function_exists( 'get_plugin_data' ) ) {
+	private function init_plugin_data()
+	{
+		if (!function_exists('get_plugin_data')) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
-		
-		$this->plugin_data = get_plugin_data( RANK_MATH_API_PLUGIN_FILE );
-		
+
+		$this->plugin_data = get_plugin_data(RANK_MATH_API_PLUGIN_FILE);
+
 		// Initialize GitHub token for higher rate limits
 		$this->init_github_auth();
 	}
@@ -111,12 +115,13 @@ class Rank_Math_API_Manager_Extended {
 	 *
 	 * @since 1.0.8
 	 */
-	private function init_github_auth() {
+	private function init_github_auth()
+	{
 		// Check for GitHub token in WordPress options (secure storage)
-		$this->github_token = get_option( 'rank_math_api_github_token' );
-		
+		$this->github_token = get_option('rank_math_api_github_token');
+
 		// If no token, check for environment variable
-		if ( ! $this->github_token && defined( 'RANK_MATH_GITHUB_TOKEN' ) ) {
+		if (!$this->github_token && defined('RANK_MATH_GITHUB_TOKEN')) {
 			$this->github_token = RANK_MATH_GITHUB_TOKEN;
 		}
 	}
@@ -124,27 +129,28 @@ class Rank_Math_API_Manager_Extended {
 	/**
 	 * Initialize WordPress hooks
 	 */
-	private function init_hooks() {
+	private function init_hooks()
+	{
 		// Check dependencies first
-		add_action( 'plugins_loaded', [ $this, 'check_dependencies' ], 5 );
-		
+		add_action('plugins_loaded', [$this, 'check_dependencies'], 5);
+
 		// Monitor plugin activation/deactivation
-		add_action( 'activated_plugin', [ $this, 'on_plugin_activated' ] );
-		add_action( 'deactivated_plugin', [ $this, 'on_plugin_deactivated' ] );
-		
+		add_action('activated_plugin', [$this, 'on_plugin_activated']);
+		add_action('deactivated_plugin', [$this, 'on_plugin_deactivated']);
+
 		// Auto-update system hooks
-		add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'check_for_update' ] );
-		add_filter( 'plugins_api', [ $this, 'plugin_info' ], 10, 3 );
-		
+		add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_update']);
+		add_filter('plugins_api', [$this, 'plugin_info'], 10, 3);
+
 		// Only register core functionality hooks if dependencies are met
-		if ( $this->are_dependencies_met() ) {
-			add_action( 'rest_api_init', [ $this, 'register_meta_fields' ] );
-			add_action( 'rest_api_init', [ $this, 'register_api_routes' ] );
-			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+		if ($this->are_dependencies_met()) {
+			add_action('rest_api_init', [$this, 'register_meta_fields']);
+			add_action('rest_api_init', [$this, 'register_api_routes']);
+			add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
 		}
-		
+
 		// Admin notices for dependency issues
-		add_action( 'admin_notices', [ $this, 'display_dependency_notices' ] );
+		add_action('admin_notices', [$this, 'display_dependency_notices']);
 	}
 
 	/**
@@ -153,7 +159,8 @@ class Rank_Math_API_Manager_Extended {
 	 * @since 1.0.7
 	 * @return bool True if all dependencies are met
 	 */
-	public function are_dependencies_met() {
+	public function are_dependencies_met()
+	{
 		$status = $this->get_dependency_status();
 		return $status['dependencies_met'];
 	}
@@ -164,7 +171,8 @@ class Rank_Math_API_Manager_Extended {
 	 * @since 1.0.7
 	 * @return array Array of required plugins
 	 */
-	private function get_required_plugins() {
+	private function get_required_plugins()
+	{
 		return array(
 			array(
 				'name' => 'Rank Math SEO',
@@ -183,12 +191,13 @@ class Rank_Math_API_Manager_Extended {
 	 * @param string $plugin_file Plugin file path
 	 * @return bool True if plugin is active
 	 */
-	private function is_plugin_active( $plugin_file ) {
-		if ( ! function_exists( 'is_plugin_active' ) ) {
+	private function is_plugin_active($plugin_file)
+	{
+		if (!function_exists('is_plugin_active')) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
-		
-		return is_plugin_active( $plugin_file );
+
+		return is_plugin_active($plugin_file);
 	}
 
 	/**
@@ -196,16 +205,17 @@ class Rank_Math_API_Manager_Extended {
 	 *
 	 * @since 1.0.7
 	 */
-	public function check_dependencies() {
+	public function check_dependencies()
+	{
 		$dependencies_met = $this->are_dependencies_met();
-		$current_status = get_option( 'rank_math_api_dependencies_status', false );
-		
+		$current_status = get_option('rank_math_api_dependencies_status', false);
+
 		// Update status if it changed
-		if ( $current_status !== $dependencies_met ) {
-			update_option( 'rank_math_api_dependencies_status', $dependencies_met );
-			
+		if ($current_status !== $dependencies_met) {
+			update_option('rank_math_api_dependencies_status', $dependencies_met);
+
 			// If dependencies are no longer met, deactivate functionality
-			if ( ! $dependencies_met ) {
+			if (!$dependencies_met) {
 				$this->handle_dependencies_missing();
 			}
 		}
@@ -216,12 +226,13 @@ class Rank_Math_API_Manager_Extended {
 	 *
 	 * @since 1.0.7
 	 */
-	private function handle_dependencies_missing() {
+	private function handle_dependencies_missing()
+	{
 		// Add admin notice
-		add_action( 'admin_notices', function() {
+		add_action('admin_notices', function () {
 			echo '<div class="notice notice-error"><p>';
 			echo '<strong>Rank Math API Manager:</strong> ';
-			echo esc_html__( 'Required dependencies are missing. Please install and activate Rank Math SEO plugin.', 'rank-math-api-manager' );
+			echo esc_html__('Required dependencies are missing. Please install and activate Rank Math SEO plugin.', 'rank-math-api-manager');
 			echo '</p></div>';
 		});
 	}
@@ -231,75 +242,76 @@ class Rank_Math_API_Manager_Extended {
 	 *
 	 * @since 1.0.7
 	 */
-	public function display_dependency_notices() {
+	public function display_dependency_notices()
+	{
 		$status = $this->get_dependency_status();
-		
-		if ( ! $status['dependencies_met'] ) {
+
+		if (!$status['dependencies_met']) {
 			echo '<div class="notice notice-error">';
-			echo '<p><strong>' . esc_html__( 'Rank Math API Manager - Dependency Issues', 'rank-math-api-manager' ) . '</strong></p>';
-			
+			echo '<p><strong>' . esc_html__('Rank Math API Manager - Dependency Issues', 'rank-math-api-manager') . '</strong></p>';
+
 			// Show missing plugins
-			if ( ! empty( $status['missing_plugins'] ) ) {
-				echo '<p>' . esc_html__( 'The following required plugins are missing or inactive:', 'rank-math-api-manager' ) . '</p>';
+			if (!empty($status['missing_plugins'])) {
+				echo '<p>' . esc_html__('The following required plugins are missing or inactive:', 'rank-math-api-manager') . '</p>';
 				echo '<ul>';
-				
-				foreach ( $status['missing_plugins'] as $plugin ) {
+
+				foreach ($status['missing_plugins'] as $plugin) {
 					echo '<li>';
-					echo '<strong>' . esc_html( $plugin['name'] ) . '</strong> - ';
-					echo esc_html( $plugin['description'] );
-					
-					if ( $this->is_plugin_installed( $plugin['file'] ) ) {
-						echo ' <a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">' . esc_html__( 'Activate Plugin', 'rank-math-api-manager' ) . '</a>';
+					echo '<strong>' . esc_html($plugin['name']) . '</strong> - ';
+					echo esc_html($plugin['description']);
+
+					if ($this->is_plugin_installed($plugin['file'])) {
+						echo ' <a href="' . esc_url(admin_url('plugins.php')) . '">' . esc_html__('Activate Plugin', 'rank-math-api-manager') . '</a>';
 					} else {
-						echo ' <a href="' . esc_url( $plugin['url'] ) . '" target="_blank">' . esc_html__( 'Install Plugin', 'rank-math-api-manager' ) . '</a>';
+						echo ' <a href="' . esc_url($plugin['url']) . '" target="_blank">' . esc_html__('Install Plugin', 'rank-math-api-manager') . '</a>';
 					}
-					
+
 					echo '</li>';
 				}
-				
+
 				echo '</ul>';
 			}
-			
+
 			// Show configuration issues
-			if ( ! empty( $status['configuration_issues'] ) ) {
-				echo '<p>' . esc_html__( 'Configuration issues detected:', 'rank-math-api-manager' ) . '</p>';
+			if (!empty($status['configuration_issues'])) {
+				echo '<p>' . esc_html__('Configuration issues detected:', 'rank-math-api-manager') . '</p>';
 				echo '<ul>';
-				
-				foreach ( $status['configuration_issues'] as $issue ) {
+
+				foreach ($status['configuration_issues'] as $issue) {
 					echo '<li>';
-					echo '<strong>' . esc_html( $issue['plugin'] ) . '</strong>: ';
-					echo esc_html( $issue['issue'] );
-					
+					echo '<strong>' . esc_html($issue['plugin']) . '</strong>: ';
+					echo esc_html($issue['issue']);
+
 					// Show debug information if available
-					if ( isset( $issue['debug'] ) && is_array( $issue['debug'] ) ) {
+					if (isset($issue['debug']) && is_array($issue['debug'])) {
 						echo '<br><small><strong>Debug Info:</strong> ';
 						$debug_parts = array();
-						foreach ( $issue['debug'] as $key => $value ) {
-							$debug_parts[] = $key . ': ' . ( is_bool( $value ) ? ( $value ? 'Yes' : 'No' ) : $value );
+						foreach ($issue['debug'] as $key => $value) {
+							$debug_parts[] = $key . ': ' . (is_bool($value) ? ($value ? 'Yes' : 'No') : $value);
 						}
-						echo esc_html( implode( ', ', $debug_parts ) );
+						echo esc_html(implode(', ', $debug_parts));
 						echo '</small>';
 					}
-					
+
 					echo '</li>';
 				}
-				
+
 				echo '</ul>';
 			}
-			
+
 			// Show recommendations
-			if ( ! empty( $status['recommendations'] ) ) {
-				echo '<p><strong>' . esc_html__( 'Recommendations:', 'rank-math-api-manager' ) . '</strong></p>';
+			if (!empty($status['recommendations'])) {
+				echo '<p><strong>' . esc_html__('Recommendations:', 'rank-math-api-manager') . '</strong></p>';
 				echo '<ul>';
-				
-				foreach ( $status['recommendations'] as $recommendation ) {
-					echo '<li>' . esc_html( $recommendation ) . '</li>';
+
+				foreach ($status['recommendations'] as $recommendation) {
+					echo '<li>' . esc_html($recommendation) . '</li>';
 				}
-				
+
 				echo '</ul>';
 			}
-			
-			echo '<p>' . esc_html__( 'Rank Math API Manager functionality is currently disabled until all dependencies are met.', 'rank-math-api-manager' ) . '</p>';
+
+			echo '<p>' . esc_html__('Rank Math API Manager functionality is currently disabled until all dependencies are met.', 'rank-math-api-manager') . '</p>';
 			echo '</div>';
 		}
 	}
@@ -311,9 +323,10 @@ class Rank_Math_API_Manager_Extended {
 	 * @param string $plugin_file Plugin file path
 	 * @return bool True if plugin is installed
 	 */
-	private function is_plugin_installed( $plugin_file ) {
+	private function is_plugin_installed($plugin_file)
+	{
 		$plugins = get_plugins();
-		return isset( $plugins[ $plugin_file ] );
+		return isset($plugins[$plugin_file]);
 	}
 
 	/**
@@ -322,24 +335,25 @@ class Rank_Math_API_Manager_Extended {
 	 * @since 1.0.7
 	 * @return bool True if Rank Math is configured
 	 */
-	private function is_rank_math_configured() {
+	private function is_rank_math_configured()
+	{
 		// Basic check: if Rank Math class exists and function is available, consider it configured
 		// This is more lenient and should work for most Rank Math installations
-		if ( class_exists( 'RankMath' ) && function_exists( 'rank_math' ) ) {
+		if (class_exists('RankMath') && function_exists('rank_math')) {
 			return true;
 		}
-		
+
 		// Fallback: check if Rank Math meta fields are registered
 		// This indicates Rank Math has been initialized
 		global $wp_meta_keys;
-		if ( isset( $wp_meta_keys ) && is_array( $wp_meta_keys ) ) {
-			foreach ( $wp_meta_keys as $post_type => $meta_keys ) {
-				if ( isset( $meta_keys['rank_math_title'] ) || isset( $meta_keys['rank_math_description'] ) ) {
+		if (isset($wp_meta_keys) && is_array($wp_meta_keys)) {
+			foreach ($wp_meta_keys as $post_type => $meta_keys) {
+				if (isset($meta_keys['rank_math_title']) || isset($meta_keys['rank_math_description'])) {
 					return true;
 				}
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -349,7 +363,8 @@ class Rank_Math_API_Manager_Extended {
 	 * @since 1.0.7
 	 * @return array Array with dependency status details
 	 */
-	public function get_dependency_status() {
+	public function get_dependency_status()
+	{
 		$status = array(
 			'dependencies_met' => false,
 			'missing_plugins' => array(),
@@ -357,21 +372,21 @@ class Rank_Math_API_Manager_Extended {
 			'recommendations' => array(),
 			'debug_info' => array()
 		);
-		
+
 		$dependencies = $this->get_required_plugins();
-		
-		foreach ( $dependencies as $plugin ) {
-			if ( ! $this->is_plugin_active( $plugin['file'] ) ) {
+
+		foreach ($dependencies as $plugin) {
+			if (!$this->is_plugin_active($plugin['file'])) {
 				$status['missing_plugins'][] = $plugin;
 			}
 		}
-		
+
 		// Check Rank Math configuration with detailed debugging
-		if ( $this->is_plugin_active( 'seo-by-rank-math/rank-math.php' ) ) {
+		if ($this->is_plugin_active('seo-by-rank-math/rank-math.php')) {
 			$rank_math_debug = $this->get_rank_math_debug_info();
 			$status['debug_info']['rank_math'] = $rank_math_debug;
-			
-			if ( ! $this->is_rank_math_configured() ) {
+
+			if (!$this->is_rank_math_configured()) {
 				$status['configuration_issues'][] = array(
 					'plugin' => 'Rank Math SEO',
 					'issue' => 'Plugin is active but not properly configured',
@@ -379,18 +394,18 @@ class Rank_Math_API_Manager_Extended {
 				);
 			}
 		}
-		
-		$status['dependencies_met'] = empty( $status['missing_plugins'] ) && empty( $status['configuration_issues'] );
-		
+
+		$status['dependencies_met'] = empty($status['missing_plugins']) && empty($status['configuration_issues']);
+
 		// Add recommendations
-		if ( ! empty( $status['missing_plugins'] ) ) {
+		if (!empty($status['missing_plugins'])) {
 			$status['recommendations'][] = 'Install and activate all required plugins';
 		}
-		
-		if ( ! empty( $status['configuration_issues'] ) ) {
+
+		if (!empty($status['configuration_issues'])) {
 			$status['recommendations'][] = 'Configure Rank Math SEO plugin properly';
 		}
-		
+
 		return $status;
 	}
 
@@ -400,36 +415,37 @@ class Rank_Math_API_Manager_Extended {
 	 * @since 1.0.7
 	 * @return array Debug information
 	 */
-	private function get_rank_math_debug_info() {
+	private function get_rank_math_debug_info()
+	{
 		$debug = array();
-		
+
 		// Check if RankMath class exists
-		$debug['class_exists'] = class_exists( 'RankMath' );
-		
+		$debug['class_exists'] = class_exists('RankMath');
+
 		// Check if rank_math function exists
-		$debug['function_exists'] = function_exists( 'rank_math' );
-		
+		$debug['function_exists'] = function_exists('rank_math');
+
 		// Try to get Rank Math instance
-		if ( $debug['function_exists'] ) {
+		if ($debug['function_exists']) {
 			try {
 				$rank_math = rank_math();
-				$debug['instance_created'] = is_object( $rank_math );
-				$debug['instance_type'] = get_class( $rank_math );
-				
-				if ( is_object( $rank_math ) ) {
-					$debug['has_get_settings'] = method_exists( $rank_math, 'get_settings' );
-					$debug['has_get_helper'] = method_exists( $rank_math, 'get_helper' );
-					$debug['has_get_admin'] = method_exists( $rank_math, 'get_admin' );
+				$debug['instance_created'] = is_object($rank_math);
+				$debug['instance_type'] = get_class($rank_math);
+
+				if (is_object($rank_math)) {
+					$debug['has_get_settings'] = method_exists($rank_math, 'get_settings');
+					$debug['has_get_helper'] = method_exists($rank_math, 'get_helper');
+					$debug['has_get_admin'] = method_exists($rank_math, 'get_admin');
 				}
-			} catch ( Exception $e ) {
+			} catch (Exception $e) {
 				$debug['exception'] = $e->getMessage();
 			}
 		}
-		
+
 		// Check if Rank Math is in the global scope
 		global $rank_math;
-		$debug['global_exists'] = isset( $rank_math );
-		
+		$debug['global_exists'] = isset($rank_math);
+
 		return $debug;
 	}
 
@@ -439,29 +455,30 @@ class Rank_Math_API_Manager_Extended {
 	 * @since 1.0.7
 	 * @param string $plugin_file Activated plugin file
 	 */
-	public function on_plugin_activated( $plugin_file ) {
+	public function on_plugin_activated($plugin_file)
+	{
 		// Check if the activated plugin is one of our dependencies
 		$dependencies = $this->get_required_plugins();
 		$is_dependency = false;
-		
-		foreach ( $dependencies as $dependency ) {
-			if ( $dependency['file'] === $plugin_file ) {
+
+		foreach ($dependencies as $dependency) {
+			if ($dependency['file'] === $plugin_file) {
 				$is_dependency = true;
 				break;
 			}
 		}
-		
-		if ( $is_dependency ) {
+
+		if ($is_dependency) {
 			// Re-check dependencies after a short delay
-			add_action( 'admin_init', function() {
+			add_action('admin_init', function () {
 				$this->check_dependencies();
 			});
-			
+
 			// Show success notice
-			add_action( 'admin_notices', function() {
+			add_action('admin_notices', function () {
 				echo '<div class="notice notice-success is-dismissible">';
-				echo '<p><strong>' . esc_html__( 'Rank Math API Manager', 'rank-math-api-manager' ) . '</strong>: ';
-				echo esc_html__( 'Dependencies are now met! Plugin functionality is enabled.', 'rank-math-api-manager' );
+				echo '<p><strong>' . esc_html__('Rank Math API Manager', 'rank-math-api-manager') . '</strong>: ';
+				echo esc_html__('Dependencies are now met! Plugin functionality is enabled.', 'rank-math-api-manager');
 				echo '</p>';
 				echo '</div>';
 			});
@@ -474,27 +491,28 @@ class Rank_Math_API_Manager_Extended {
 	 * @since 1.0.7
 	 * @param string $plugin_file Deactivated plugin file
 	 */
-	public function on_plugin_deactivated( $plugin_file ) {
+	public function on_plugin_deactivated($plugin_file)
+	{
 		// Check if the deactivated plugin is one of our dependencies
 		$dependencies = $this->get_required_plugins();
 		$is_dependency = false;
-		
-		foreach ( $dependencies as $dependency ) {
-			if ( $dependency['file'] === $plugin_file ) {
+
+		foreach ($dependencies as $dependency) {
+			if ($dependency['file'] === $plugin_file) {
 				$is_dependency = true;
 				break;
 			}
 		}
-		
-		if ( $is_dependency ) {
+
+		if ($is_dependency) {
 			// Re-check dependencies
 			$this->check_dependencies();
-			
+
 			// Show warning notice
-			add_action( 'admin_notices', function() {
+			add_action('admin_notices', function () {
 				echo '<div class="notice notice-warning is-dismissible">';
-				echo '<p><strong>' . esc_html__( 'Rank Math API Manager', 'rank-math-api-manager' ) . '</strong>: ';
-				echo esc_html__( 'A required dependency has been deactivated. Plugin functionality is now disabled.', 'rank-math-api-manager' );
+				echo '<p><strong>' . esc_html__('Rank Math API Manager', 'rank-math-api-manager') . '</strong>: ';
+				echo esc_html__('A required dependency has been deactivated. Plugin functionality is now disabled.', 'rank-math-api-manager');
 				echo '</p>';
 				echo '</div>';
 			});
@@ -504,7 +522,8 @@ class Rank_Math_API_Manager_Extended {
 	/**
 	 * Enqueue admin scripts and styles
 	 */
-	public function enqueue_admin_scripts($hook) {
+	public function enqueue_admin_scripts($hook)
+	{
 		// Only load on our admin pages
 		if (strpos($hook, 'rank-math-api') === false) {
 			return;
@@ -535,30 +554,35 @@ class Rank_Math_API_Manager_Extended {
 	/**
 	 * Register meta fields for REST API
 	 */
-	public function register_meta_fields() {
+	public function register_meta_fields()
+	{
 		$meta_fields = [
-			'rank_math_title'         => 'SEO Title',
-			'rank_math_description'   => 'SEO Description',
+			'rank_math_title' => 'SEO Title',
+			'rank_math_description' => 'SEO Description',
 			'rank_math_canonical_url' => 'Canonical URL',
 			'rank_math_focus_keyword' => 'Focus Keyword',
+			'rank_math_primary_category' => 'Primary Category',
 		];
 
-		$post_types = [ 'post' ];
-		if ( class_exists( 'WooCommerce' ) ) {
+		$post_types = ['post'];
+		if (class_exists('WooCommerce')) {
 			$post_types[] = 'product';
 		}
 
-		foreach ( $post_types as $post_type ) {
-			foreach ( $meta_fields as $meta_key => $description ) {
+		foreach ($post_types as $post_type) {
+			foreach ($meta_fields as $meta_key => $description) {
+				// Use integer type for primary_category, string for others
+				$field_type = ($meta_key === 'rank_math_primary_category') ? 'integer' : 'string';
+
 				$args = [
-					'show_in_rest'  => true,
-					'single'        => true,
-					'type'          => 'string',
-					'description'   => $description,
-					'auth_callback' => [ $this, 'check_update_permission' ],
+					'show_in_rest' => true,
+					'single' => true,
+					'type' => $field_type,
+					'description' => $description,
+					'auth_callback' => [$this, 'check_update_permission'],
 				];
 
-				register_post_meta( $post_type, $meta_key, $args );
+				register_post_meta($post_type, $meta_key, $args);
 			}
 		}
 	}
@@ -566,24 +590,26 @@ class Rank_Math_API_Manager_Extended {
 	/**
 	 * Register REST API routes
 	 */
-	public function register_api_routes() {
-		register_rest_route( 'rank-math-api/v1', '/update-meta', [
-			'methods'             => 'POST',
-			'callback'            => [ $this, 'update_rank_math_meta' ],
-			'permission_callback' => [ $this, 'check_update_permission' ],
-			'args'                => [
+	public function register_api_routes()
+	{
+		register_rest_route('rank-math-api/v1', '/update-meta', [
+			'methods' => 'POST',
+			'callback' => [$this, 'update_rank_math_meta'],
+			'permission_callback' => [$this, 'check_update_permission'],
+			'args' => [
 				'post_id' => [
-					'required'          => true,
-					'validate_callback' => function ( $param ) {
-						return is_numeric( $param ) && get_post( $param );
+					'required' => true,
+					'validate_callback' => function ($param) {
+						return is_numeric($param) && get_post($param);
 					}
 				],
-				'rank_math_title'         => [ 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ],
-				'rank_math_description'   => [ 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ],
-				'rank_math_canonical_url' => [ 'type' => 'string', 'sanitize_callback' => 'esc_url_raw' ],
-				'rank_math_focus_keyword' => [ 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ],
+				'rank_math_title' => ['type' => 'string', 'sanitize_callback' => 'sanitize_text_field'],
+				'rank_math_description' => ['type' => 'string', 'sanitize_callback' => 'sanitize_text_field'],
+				'rank_math_canonical_url' => ['type' => 'string', 'sanitize_callback' => 'esc_url_raw'],
+				'rank_math_focus_keyword' => ['type' => 'string', 'sanitize_callback' => 'sanitize_text_field'],
+				'rank_math_primary_category' => ['type' => 'integer', 'sanitize_callback' => 'absint'],
 			],
-		] );
+		]);
 	}
 
 	/**
@@ -592,31 +618,33 @@ class Rank_Math_API_Manager_Extended {
 	 * @param WP_REST_Request $request Request object
 	 * @return WP_REST_Response|WP_Error Response object
 	 */
-	public function update_rank_math_meta( WP_REST_Request $request ) {
-		$post_id = $request->get_param( 'post_id' );
-		$fields  = [
+	public function update_rank_math_meta(WP_REST_Request $request)
+	{
+		$post_id = $request->get_param('post_id');
+		$fields = [
 			'rank_math_title',
 			'rank_math_description',
 			'rank_math_focus_keyword',
 			'rank_math_canonical_url',
+			'rank_math_primary_category',
 		];
 
 		$result = [];
 
-		foreach ( $fields as $field ) {
-			$value = $request->get_param( $field );
+		foreach ($fields as $field) {
+			$value = $request->get_param($field);
 
-			if ( $value !== null ) {
-				$update_result = update_post_meta( $post_id, $field, $value );
-				$result[ $field ] = $update_result ? 'updated' : 'failed';
+			if ($value !== null) {
+				$update_result = update_post_meta($post_id, $field, $value);
+				$result[$field] = $update_result ? 'updated' : 'failed';
 			}
 		}
 
-		if ( empty( $result ) ) {
-			return new WP_Error( 'no_update', 'No metadata was updated', [ 'status' => 400 ] );
+		if (empty($result)) {
+			return new WP_Error('no_update', 'No metadata was updated', ['status' => 400]);
 		}
 
-		return new WP_REST_Response( $result, 200 );
+		return new WP_REST_Response($result, 200);
 	}
 
 	/**
@@ -624,8 +652,9 @@ class Rank_Math_API_Manager_Extended {
 	 *
 	 * @return bool True if user can edit posts
 	 */
-	public function check_update_permission() {
-		return current_user_can( 'edit_posts' );
+	public function check_update_permission()
+	{
+		return current_user_can('edit_posts');
 	}
 
 	/**
@@ -633,7 +662,8 @@ class Rank_Math_API_Manager_Extended {
 	 *
 	 * @return string Plugin version
 	 */
-	public function get_version() {
+	public function get_version()
+	{
 		return RANK_MATH_API_VERSION;
 	}
 
@@ -643,9 +673,10 @@ class Rank_Math_API_Manager_Extended {
 	 * @since 1.0.7
 	 * @param string $message Debug message to log
 	 */
-	private function log_debug( $message ) {
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( 'Rank Math API Manager: ' . $message );
+	private function log_debug($message)
+	{
+		if (defined('WP_DEBUG') && WP_DEBUG) {
+			error_log('Rank Math API Manager: ' . $message);
 		}
 	}
 
@@ -656,78 +687,79 @@ class Rank_Math_API_Manager_Extended {
 	 * @param object $transient WordPress update transient
 	 * @return object Modified transient
 	 */
-	public function check_for_update( $transient ) {
-		$this->log_debug( 'check_for_update called' );
-		
+	public function check_for_update($transient)
+	{
+		$this->log_debug('check_for_update called');
+
 		// Ensure we have a valid transient object
-		if ( empty( $transient->checked ) ) {
-			$this->log_debug( 'Transient checked is empty, returning early' );
+		if (empty($transient->checked)) {
+			$this->log_debug('Transient checked is empty, returning early');
 			return $transient;
 		}
 
 		// Get plugin basename
-		$plugin_slug = plugin_basename( RANK_MATH_API_PLUGIN_FILE );
-		
+		$plugin_slug = plugin_basename(RANK_MATH_API_PLUGIN_FILE);
+
 		// Only check if our plugin is in the checked list
-		if ( ! isset( $transient->checked[ $plugin_slug ] ) ) {
-			$this->log_debug( 'Plugin not in checked list: ' . $plugin_slug );
+		if (!isset($transient->checked[$plugin_slug])) {
+			$this->log_debug('Plugin not in checked list: ' . $plugin_slug);
 			return $transient;
 		}
-		
-		$this->log_debug( 'Plugin found in checked list, proceeding with update check' );
+
+		$this->log_debug('Plugin found in checked list, proceeding with update check');
 
 		// Get current version
 		$current_version = $this->plugin_data['Version'];
 
 		// Check for cached release data first
 		$cache_key = 'rank_math_api_github_release';
-		$release_data = get_transient( $cache_key );
+		$release_data = get_transient($cache_key);
 
-		if ( false === $release_data ) {
-			$this->log_debug( 'No cached release data, fetching from GitHub API' );
+		if (false === $release_data) {
+			$this->log_debug('No cached release data, fetching from GitHub API');
 			// Get latest release from GitHub with rate limiting
 			$release_data = $this->get_latest_github_release();
-			
-			if ( is_wp_error( $release_data ) ) {
-				$this->log_debug( 'GitHub API error: ' . $release_data->get_error_message() );
+
+			if (is_wp_error($release_data)) {
+				$this->log_debug('GitHub API error: ' . $release_data->get_error_message());
 				return $transient;
 			}
-			$this->log_debug( 'Successfully fetched release data from GitHub' );
+			$this->log_debug('Successfully fetched release data from GitHub');
 		} else {
-			$this->log_debug( 'Using cached release data' );
+			$this->log_debug('Using cached release data');
 
 			// Cache the release data for 1 hour
-			set_transient( $cache_key, $release_data, 3600 );
+			set_transient($cache_key, $release_data, 3600);
 		}
 
-		if ( ! $release_data || ! isset( $release_data['version'] ) ) {
-			$this->log_debug( 'Invalid release data or missing version info' );
+		if (!$release_data || !isset($release_data['version'])) {
+			$this->log_debug('Invalid release data or missing version info');
 			return $transient;
 		}
 
-		$this->log_debug( 'Comparing versions: Current=' . $current_version . ', Remote=' . $release_data['version'] );
+		$this->log_debug('Comparing versions: Current=' . $current_version . ', Remote=' . $release_data['version']);
 
 		// Compare versions
-		if ( version_compare( $release_data['version'], $current_version, '>' ) ) {
-			$this->log_debug( 'Update available! Adding to transient' );
+		if (version_compare($release_data['version'], $current_version, '>')) {
+			$this->log_debug('Update available! Adding to transient');
 			// Update available - add to response
 			$plugin_data = (object) array(
-				'slug'         => dirname( $plugin_slug ),
-				'plugin'       => $plugin_slug,
-				'new_version'  => $release_data['version'],
-				'url'          => $this->plugin_data['PluginURI'],
-				'package'      => $release_data['download_url'],
-				'icons'        => array(),
-				'banners'      => array(),
-				'banners_rtl'  => array(),
-				'tested'       => '6.4',
+				'slug' => dirname($plugin_slug),
+				'plugin' => $plugin_slug,
+				'new_version' => $release_data['version'],
+				'url' => $this->plugin_data['PluginURI'],
+				'package' => $release_data['download_url'],
+				'icons' => array(),
+				'banners' => array(),
+				'banners_rtl' => array(),
+				'tested' => '6.4',
 				'requires_php' => '7.4',
 			);
 
-			$transient->response[ $plugin_slug ] = $plugin_data;
-			$this->log_debug( 'Successfully added update to WordPress transient' );
+			$transient->response[$plugin_slug] = $plugin_data;
+			$this->log_debug('Successfully added update to WordPress transient');
 		} else {
-			$this->log_debug( 'No update needed - version is current' );
+			$this->log_debug('No update needed - version is current');
 		}
 
 		return $transient;
@@ -739,99 +771,100 @@ class Rank_Math_API_Manager_Extended {
 	 * @since 1.0.7
 	 * @return array|WP_Error Release data or error
 	 */
-	private function get_latest_github_release() {
-		$this->log_debug( 'Starting GitHub API request' );
-		
+	private function get_latest_github_release()
+	{
+		$this->log_debug('Starting GitHub API request');
+
 		// Rate limiting check
-		$last_check = get_option( 'rank_math_api_last_github_check', 0 );
+		$last_check = get_option('rank_math_api_last_github_check', 0);
 		$check_interval = 300; // 5 minutes minimum between checks
 
-		if ( time() - $last_check < $check_interval ) {
-			$this->log_debug( 'Rate limited - too many recent requests' );
-			return new WP_Error( 'rate_limited', 'Rate limited: too many requests' );
+		if (time() - $last_check < $check_interval) {
+			$this->log_debug('Rate limited - too many recent requests');
+			return new WP_Error('rate_limited', 'Rate limited: too many requests');
 		}
 
 		// Prepare headers with optional authentication
 		$headers = array(
-			'Accept'     => 'application/vnd.github.v3+json',
-			'User-Agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' )
+			'Accept' => 'application/vnd.github.v3+json',
+			'User-Agent' => 'WordPress/' . get_bloginfo('version') . '; ' . get_bloginfo('url')
 		);
 
 		// Add authentication header if token is available
-		if ( $this->github_token ) {
+		if ($this->github_token) {
 			$headers['Authorization'] = 'token ' . $this->github_token;
-			$this->log_debug( 'Using authenticated GitHub API request (5000/hour limit)' );
+			$this->log_debug('Using authenticated GitHub API request (5000/hour limit)');
 		} else {
-			$this->log_debug( 'Using unauthenticated GitHub API request (60/hour limit)' );
+			$this->log_debug('Using unauthenticated GitHub API request (60/hour limit)');
 		}
 
 		// Make API request
-		$response = wp_remote_get( $this->github_repo['api_url'], array(
+		$response = wp_remote_get($this->github_repo['api_url'], array(
 			'timeout' => 15,
 			'headers' => $headers
-		) );
+		));
 
 		// Update last check time
-		update_option( 'rank_math_api_last_github_check', time() );
+		update_option('rank_math_api_last_github_check', time());
 
-		if ( is_wp_error( $response ) ) {
-			$this->log_debug( 'GitHub API request failed: ' . $response->get_error_message() );
-			return new WP_Error( 'api_error', 'GitHub API request failed: ' . $response->get_error_message() );
+		if (is_wp_error($response)) {
+			$this->log_debug('GitHub API request failed: ' . $response->get_error_message());
+			return new WP_Error('api_error', 'GitHub API request failed: ' . $response->get_error_message());
 		}
 
-		$response_code = wp_remote_retrieve_response_code( $response );
-		$this->log_debug( 'GitHub API response code: ' . $response_code );
-		
-		if ( 200 !== $response_code ) {
-			$this->log_debug( 'GitHub API error - status: ' . $response_code );
-			return new WP_Error( 'api_error', 'GitHub API returned status: ' . $response_code );
+		$response_code = wp_remote_retrieve_response_code($response);
+		$this->log_debug('GitHub API response code: ' . $response_code);
+
+		if (200 !== $response_code) {
+			$this->log_debug('GitHub API error - status: ' . $response_code);
+			return new WP_Error('api_error', 'GitHub API returned status: ' . $response_code);
 		}
 
-		$body = wp_remote_retrieve_body( $response );
-		$data = json_decode( $body, true );
+		$body = wp_remote_retrieve_body($response);
+		$data = json_decode($body, true);
 
-		if ( ! $data || ! isset( $data['tag_name'] ) ) {
-			$this->log_debug( 'Invalid GitHub API response - no tag_name found' );
-			return new WP_Error( 'invalid_response', 'Invalid GitHub API response' );
+		if (!$data || !isset($data['tag_name'])) {
+			$this->log_debug('Invalid GitHub API response - no tag_name found');
+			return new WP_Error('invalid_response', 'Invalid GitHub API response');
 		}
 
 		// Parse version from tag (remove 'v' prefix if present)
-		$version = ltrim( $data['tag_name'], 'v' );
-		$this->log_debug( 'Found GitHub release version: ' . $version );
+		$version = ltrim($data['tag_name'], 'v');
+		$this->log_debug('Found GitHub release version: ' . $version);
 
 		// Look for custom ZIP asset first
 		$download_url = null;
-		$assets_count = isset( $data['assets'] ) ? count( $data['assets'] ) : 0;
-		$this->log_debug( 'Release has ' . $assets_count . ' assets' );
-		
-		if ( isset( $data['assets'] ) && is_array( $data['assets'] ) ) {
-			foreach ( $data['assets'] as $asset ) {
-				$this->log_debug( 'Found asset: ' . $asset['name'] );
-				if ( 'rank-math-api-manager.zip' === $asset['name'] ) {
+		$assets_count = isset($data['assets']) ? count($data['assets']) : 0;
+		$this->log_debug('Release has ' . $assets_count . ' assets');
+
+		if (isset($data['assets']) && is_array($data['assets'])) {
+			foreach ($data['assets'] as $asset) {
+				$this->log_debug('Found asset: ' . $asset['name']);
+				if ('rank-math-api-manager.zip' === $asset['name']) {
 					$download_url = $asset['browser_download_url'];
-					$this->log_debug( 'Using custom ZIP asset: ' . $download_url );
+					$this->log_debug('Using custom ZIP asset: ' . $download_url);
 					break;
 				}
 			}
 		}
 
 		// Fallback to zipball_url if no custom asset found
-		if ( ! $download_url && isset( $data['zipball_url'] ) ) {
+		if (!$download_url && isset($data['zipball_url'])) {
 			$download_url = $data['zipball_url'];
-			$this->log_debug( 'No custom ZIP found, using zipball: ' . $download_url );
+			$this->log_debug('No custom ZIP found, using zipball: ' . $download_url);
 		}
 
-		if ( ! $download_url ) {
-			$this->log_debug( 'ERROR: No download URL found in release' );
-			return new WP_Error( 'no_download', 'No download URL found in release' );
+		if (!$download_url) {
+			$this->log_debug('ERROR: No download URL found in release');
+			return new WP_Error('no_download', 'No download URL found in release');
 		}
 
 		return array(
-			'version'      => $version,
-			'url'          => $data['html_url'],
+			'version' => $version,
+			'url' => $data['html_url'],
 			'download_url' => $download_url,
 			'published_at' => $data['published_at'],
-			'description'  => isset( $data['body'] ) ? $data['body'] : '',
+			'description' => isset($data['body']) ? $data['body'] : '',
 		);
 	}
 
@@ -844,58 +877,60 @@ class Rank_Math_API_Manager_Extended {
 	 * @param object $args   Additional arguments
 	 * @return object|false Modified result or false
 	 */
-	public function plugin_info( $res, $action, $args ) {
+	public function plugin_info($res, $action, $args)
+	{
 		// Only handle plugin_information requests for our plugin
-		if ( 'plugin_information' !== $action || 'rank-math-api-manager' !== $args->slug ) {
+		if ('plugin_information' !== $action || 'rank-math-api-manager' !== $args->slug) {
 			return false;
 		}
 
 		// Get cached release data
 		$cache_key = 'rank_math_api_github_release';
-		$release_data = get_transient( $cache_key );
+		$release_data = get_transient($cache_key);
 
-		if ( false === $release_data ) {
+		if (false === $release_data) {
 			$release_data = $this->get_latest_github_release();
-			
-			if ( is_wp_error( $release_data ) ) {
+
+			if (is_wp_error($release_data)) {
 				return false;
 			}
 
-			set_transient( $cache_key, $release_data, 3600 );
+			set_transient($cache_key, $release_data, 3600);
 		}
 
-		if ( ! $release_data ) {
+		if (!$release_data) {
 			return false;
 		}
 
 		// Format changelog
 		$changelog = '';
-		if ( ! empty( $release_data['description'] ) ) {
-			$changelog = wp_kses_post( nl2br( $release_data['description'] ) );
+		if (!empty($release_data['description'])) {
+			$changelog = wp_kses_post(nl2br($release_data['description']));
 		}
 
 		// Return plugin information object
 		return (object) array(
-			'name'           => $this->plugin_data['Name'],
-			'slug'           => 'rank-math-api-manager',
-			'version'        => $release_data['version'],
-			'author'         => '<a href="' . esc_url( $this->plugin_data['AuthorURI'] ) . '">' . $this->plugin_data['AuthorName'] . '</a>',
-			'homepage'       => $this->plugin_data['PluginURI'],
-			'requires'       => '5.0',
-			'tested'         => '6.4',
-			'requires_php'   => '7.4',
-			'last_updated'   => $release_data['published_at'],
-			'download_link'  => $release_data['download_url'],
-			'sections'       => array(
-				'description' => '<p>' . esc_html( $this->plugin_data['Description'] ) . '</p>',
-				'changelog'   => $changelog,
+			'name' => $this->plugin_data['Name'],
+			'slug' => 'rank-math-api-manager',
+			'version' => $release_data['version'],
+			'author' => '<a href="' . esc_url($this->plugin_data['AuthorURI']) . '">' . $this->plugin_data['AuthorName'] . '</a>',
+			'homepage' => $this->plugin_data['PluginURI'],
+			'requires' => '5.0',
+			'tested' => '6.4',
+			'requires_php' => '7.4',
+			'last_updated' => $release_data['published_at'],
+			'download_link' => $release_data['download_url'],
+			'sections' => array(
+				'description' => '<p>' . esc_html($this->plugin_data['Description']) . '</p>',
+				'changelog' => $changelog,
 			),
 		);
 	}
 }
 
 // Initialize the plugin
-function rank_math_api_manager_init() {
+function rank_math_api_manager_init()
+{
 	return Rank_Math_API_Manager_Extended::get_instance();
 }
 
@@ -909,30 +944,31 @@ add_action('plugins_loaded', 'rank_math_api_manager_init');
  * 
  * @since 1.0.0
  */
-function rank_math_api_manager_activate() {
+function rank_math_api_manager_activate()
+{
 	// Create necessary directories
 	$upload_dir = wp_upload_dir();
 	$plugin_dir = $upload_dir['basedir'] . '/rank-math-api-manager';
-	
+
 	if (!file_exists($plugin_dir)) {
 		wp_mkdir_p($plugin_dir);
 	}
-	
+
 	// Add activation timestamp
 	update_option('rank_math_api_activated', current_time('mysql'));
-	
+
 	// Check dependencies on activation
 	$plugin_instance = Rank_Math_API_Manager_Extended::get_instance();
-	if ( method_exists( $plugin_instance, 'check_dependencies' ) ) {
+	if (method_exists($plugin_instance, 'check_dependencies')) {
 		$plugin_instance->check_dependencies();
 	}
-	
+
 	// Show admin notice if dependencies are missing
-	if ( method_exists( $plugin_instance, 'are_dependencies_met' ) && ! $plugin_instance->are_dependencies_met() ) {
-		add_action( 'admin_notices', function() {
+	if (method_exists($plugin_instance, 'are_dependencies_met') && !$plugin_instance->are_dependencies_met()) {
+		add_action('admin_notices', function () {
 			echo '<div class="notice notice-warning is-dismissible">';
-			echo '<p><strong>' . esc_html__( 'Rank Math API Manager', 'rank-math-api-manager' ) . '</strong>: ';
-			echo esc_html__( 'Plugin activated but required dependencies are missing. Please install and activate Rank Math SEO plugin for full functionality.', 'rank-math-api-manager' );
+			echo '<p><strong>' . esc_html__('Rank Math API Manager', 'rank-math-api-manager') . '</strong>: ';
+			echo esc_html__('Plugin activated but required dependencies are missing. Please install and activate Rank Math SEO plugin for full functionality.', 'rank-math-api-manager');
 			echo '</p>';
 			echo '</div>';
 		});
@@ -946,10 +982,11 @@ function rank_math_api_manager_activate() {
  * 
  * @since 1.0.0
  */
-function rank_math_api_manager_deactivate() {
+function rank_math_api_manager_deactivate()
+{
 	// Clear scheduled events
 	wp_clear_scheduled_hook('rank_math_api_update_check');
-	
+
 	// Clear update-related caches
 	delete_transient('rank_math_api_github_release');
 	delete_option('rank_math_api_last_github_check');
@@ -968,15 +1005,16 @@ register_deactivation_hook(__FILE__, 'rank_math_api_manager_deactivate');
  * 
  * @since 1.0.0
  */
-function rank_math_api_manager_uninstall() {
+function rank_math_api_manager_uninstall()
+{
 	// Remove all plugin options
 	delete_option('rank_math_api_activated');
 	delete_option('rank_math_api_dependencies_status');
 	delete_option('rank_math_api_last_github_check');
-	
+
 	// Remove transients
 	delete_transient('rank_math_api_github_release');
-	
+
 	// Clear any scheduled events
 	wp_clear_scheduled_hook('rank_math_api_update_check');
 }
